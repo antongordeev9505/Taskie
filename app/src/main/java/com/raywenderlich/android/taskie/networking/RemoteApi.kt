@@ -130,48 +130,42 @@ class RemoteApi(private val apiService: RemoteApiService) {
           override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
               //if there is any response from the server
               //it can be error too: you are unauthorized or server has a error
-              val message = response.body()?.toString()
+              val message = response.body()?.string()
               if (message == null) {
                   onUserCreated(null, NullPointerException("No response body!"))
                   return
               }
-              onUserCreated(message, null)
+              val jsonObject = JSONObject(message.toString())
+              onUserCreated(jsonObject.getString("message"), null)
           }
       })
   }
 
   fun getTasks(onTasksReceived: (List<Task>, Throwable?) -> Unit) {
-      Thread(Runnable {
-          val connection = URL("$BASE_URL/api/note").openConnection() as HttpURLConnection
-          connection.requestMethod = "GET"
-          connection.setRequestProperty("Content-Type", "application/json")
-          connection.setRequestProperty("Accept", "application/json")
-          connection.setRequestProperty("Authorization", App.getToken())
-          connection.readTimeout = 10000
-          connection.connectTimeout = 10000
-          connection.doInput = true
+      apiService.getNotes(App.getToken()).enqueue(object : Callback<ResponseBody> {
 
-          try {
-              val reader = InputStreamReader(connection.inputStream)
-              reader.use { input ->
-                  val response = StringBuilder()
-                  val bufferedReader = BufferedReader(input)
-
-                  bufferedReader.useLines { lines ->
-                      lines.forEach {
-                          response.append(it.trim())
-                      }
-                  }
-                  //parse json object to Kotlin Object GetTasksResponse
-                  val taskResponse = gson.fromJson(response.toString(), GetTasksResponse::class.java)
-                  //return only the tasks where isCompleted - false
-                  onTasksReceived(taskResponse.notes.filter { !it.isCompleted }, null)
-              }
-          } catch (error: Throwable) {
+          override fun onFailure(call: Call<ResponseBody>, error: Throwable) {
               onTasksReceived(emptyList(), error)
           }
-          connection.disconnect()
-      }).start()
+
+          override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+              val jsonBody = response.body()?.string()
+
+              //check the response body
+              if (jsonBody == null) {
+                  onTasksReceived(emptyList(), NullPointerException("No data available"))
+                  return
+              }
+
+              val data = gson.fromJson(jsonBody, GetTasksResponse::class.java)
+
+              if (data != null && data.notes.isNotEmpty()) {
+                  onTasksReceived(data.notes.filter { !it.isCompleted }, null)
+              } else {
+                  onTasksReceived(emptyList(), NullPointerException("No data available"))
+              }
+          }
+      })
   }
 
   fun deleteTask(onTaskDeleted: (Throwable?) -> Unit) {
