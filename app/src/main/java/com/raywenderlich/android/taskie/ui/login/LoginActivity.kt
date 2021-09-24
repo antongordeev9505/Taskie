@@ -59,7 +59,7 @@ class LoginActivity : AppCompatActivity() {
     NetworkStatusChecker(getSystemService(ConnectivityManager::class.java))
   }
 
-  private val remoteApi = RemoteApi()
+  private val remoteApi = App.remoteApi
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)

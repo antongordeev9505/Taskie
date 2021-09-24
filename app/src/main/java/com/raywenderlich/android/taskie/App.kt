@@ -36,6 +36,8 @@ package com.raywenderlich.android.taskie
 
 import android.app.Application
 import android.content.Context
+import com.raywenderlich.android.taskie.networking.RemoteApi
+import com.raywenderlich.android.taskie.networking.buildApiService
 
 private const val KEY_PREFERENCES = "taskie_preferences"
 private const val KEY_TOKEN = "token"
@@ -56,6 +58,13 @@ class App : Application() {
     }
 
     fun getToken() = preferences.getString(KEY_TOKEN, "") ?: ""
+
+    //expose remoteAPI to the whole App
+    //build api service
+    private val apiService by lazy { buildApiService() }
+    //pass api service - all app will use this Api service by means of remoteApi
+    //RemoteApi is middleman
+    val remoteApi by lazy { RemoteApi(apiService) }
   }
 
   override fun onCreate() {

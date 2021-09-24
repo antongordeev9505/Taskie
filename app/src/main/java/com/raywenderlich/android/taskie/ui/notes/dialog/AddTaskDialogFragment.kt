@@ -44,6 +44,7 @@ import android.view.WindowManager
 import android.widget.ArrayAdapter
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.DialogFragment
+import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.R
 import com.raywenderlich.android.taskie.model.PriorityColor
 import com.raywenderlich.android.taskie.model.Task
@@ -63,7 +64,7 @@ class AddTaskDialogFragment : DialogFragment() {
   }
 
   private var taskAddedListener: TaskAddedListener? = null
-  private val remoteApi = RemoteApi()
+  private val remoteApi = App.remoteApi
 
   interface TaskAddedListener {
     fun onTaskAdded(task: Task)

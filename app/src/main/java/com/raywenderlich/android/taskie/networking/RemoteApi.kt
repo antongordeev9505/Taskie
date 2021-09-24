@@ -55,7 +55,8 @@ import java.net.URL
 
 const val BASE_URL = "https://taskie-rw.herokuapp.com"
 
-class RemoteApi {
+//RemoteApi will be middleman between user interface and actual Api service
+class RemoteApi(private val remoteApiService: RemoteApiService) {
 
     private val gson = Gson()
 

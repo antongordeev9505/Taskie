@@ -22,6 +22,12 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
   }
+  
+  //can use more advance features of Java
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
 }
 
 dependencies {
@@ -44,4 +50,5 @@ dependencies {
   implementation 'com.google.android.material:material:1.4.0'
 
   implementation 'com.google.code.gson:gson:2.8.8'
+  implementation 'com.squareup.retrofit2:retrofit:2.9.0'
 }
