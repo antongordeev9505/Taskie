@@ -115,12 +115,11 @@ class TaskOptionsDialogFragment : DialogFragment() {
       networkStatusChecker.performIfConnectedToInternet {
         //pass id
         remoteApi.completeTask(taskId) { error ->
-          activity?.runOnUiThread {
-            if (error == null) {
-              taskOptionSelectedListener?.onTaskCompleted(taskId)
-            }
-            dismissAllowingStateLoss()
+          if (error == null) {
+            taskOptionSelectedListener?.onTaskCompleted(taskId)
           }
+          dismissAllowingStateLoss()
+
         }
       }
     }
