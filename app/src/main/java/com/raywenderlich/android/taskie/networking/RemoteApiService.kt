@@ -1,5 +1,16 @@
 package com.raywenderlich.android.taskie.networking
 
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
+import retrofit2.Call
+import retrofit2.http.Body
+import retrofit2.http.POST
+
 interface RemoteApiService {
-    //will be all Api services
+
+    //rest method using endpoint
+    @POST("/api/register")
+    //RequestBody describes data we can send to the server
+    //ResponseBody - describe data we receive from server
+    fun registerUser(@Body request: RequestBody): Call<ResponseBody>
 }

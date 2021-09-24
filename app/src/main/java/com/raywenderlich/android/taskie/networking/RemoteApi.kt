@@ -42,9 +42,16 @@ import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
 import com.raywenderlich.android.taskie.model.response.GetTasksResponse
+import okhttp3.MediaType
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
 import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.lang.NullPointerException
 import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.URL
@@ -56,7 +63,7 @@ import java.net.URL
 const val BASE_URL = "https://taskie-rw.herokuapp.com"
 
 //RemoteApi will be middleman between user interface and actual Api service
-class RemoteApi(private val remoteApiService: RemoteApiService) {
+class RemoteApi(private val apiService: RemoteApiService) {
 
     private val gson = Gson()
 
@@ -109,61 +116,28 @@ class RemoteApi(private val remoteApiService: RemoteApiService) {
   }
 
   fun registerUser(userDataRequest: UserDataRequest, onUserCreated: (String?, Throwable?) -> Unit) {
-    //in background
-      Thread(Runnable {
-          //open HTTP connection to specific URL
-          //text after BASEURL - end point - say what functionality we get - in this case register user
-          val connection = URL("$BASE_URL/api/register").openConnection() as HttpURLConnection
-          //sending data to server - POST
-          connection.requestMethod = "POST"
-          //JSON format for data
-          //A header saying in which format the communication to the server should be
-          connection.setRequestProperty("Content-Type", "application/json")
-          //A header saying in which format the response from the server will be
-          connection.setRequestProperty("Accept", "application/json")
-          connection.readTimeout = 10000
-          connection.connectTimeout = 10000
-          //can use output and input data
-          connection.doInput = true
-          connection.doOutput = true
+      val body = RequestBody.create(
+          //prepare data as a Request body
+          MediaType.parse("application/json"), gson.toJson(userDataRequest)
+      )
 
-          //use gson to parse data to Json - easiest way
-          val body = gson.toJson(userDataRequest)
-
-          val bytes = body.toByteArray()
-
-          try {
-              //write bytes to output Stream
-              //use - automaticly close the stream when it will be done
-              connection.outputStream.use {
-                  it.write(bytes)
-              }
-                //read response from inputStream
-              val reader = InputStreamReader(connection.inputStream)
-              reader.use { input ->
-                  //response - variable for response from server
-                  val response = StringBuilder()
-                  //use BR cuz read one chunk at the time - better way to read
-                  val bufferedReader = BufferedReader(input)
-
-                  bufferedReader.useLines { lines ->
-                      lines.forEach {
-                          response.append(it.trim())
-                      }
-                  }
-
-                  val jsonObject = JSONObject(response.toString())
-
-                  //finally send back response
-                  onUserCreated(jsonObject.getString("message"), null)
-              }
-
-          } catch (error: Throwable){
-              //if error
+      //enqueue api call in background
+      apiService.registerUser(body).enqueue(object : Callback<ResponseBody>{
+          override fun onFailure(call: Call<ResponseBody>, error: Throwable) {
+              //problems can be: internet connection, endpoint which doesnt exist or timing out
               onUserCreated(null, error)
           }
-          connection.disconnect()
-      }).start()
+          override fun onResponse(call: Call<ResponseBody>, response: Response<ResponseBody>) {
+              //if there is any response from the server
+              //it can be error too: you are unauthorized or server has a error
+              val message = response.body()?.toString()
+              if (message == null) {
+                  onUserCreated(null, NullPointerException("No response body!"))
+                  return
+              }
+              onUserCreated(message, null)
+          }
+      })
   }
 
   fun getTasks(onTasksReceived: (List<Task>, Throwable?) -> Unit) {
