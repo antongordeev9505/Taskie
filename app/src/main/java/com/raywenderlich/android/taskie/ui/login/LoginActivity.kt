@@ -65,6 +65,11 @@ class LoginActivity : AppCompatActivity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_login)
     initUi()
+
+    //if token is exist in prefs go to mainActivity immidiatly without logging again
+    if (App.getToken().isNotBlank()) {
+      startActivity(MainActivity.getIntent(this))
+    }
   }
 
   private fun initUi() {

@@ -35,6 +35,7 @@
 package com.raywenderlich.android.taskie.networking
 
 import android.util.Log
+import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.model.Task
 import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
@@ -194,14 +195,60 @@ class RemoteApi {
   }
 
   fun addTask(addTaskRequest: AddTaskRequest, onTaskCreated: (Task?, Throwable?) -> Unit) {
-    onTaskCreated(
-        Task("id3",
-            addTaskRequest.title,
-            addTaskRequest.content,
-            false,
-            addTaskRequest.taskPriority
-        ), null
-    )
+      Thread(Runnable {
+          val connection = URL("$BASE_URL/api/note").openConnection() as HttpURLConnection
+          connection.requestMethod = "POST"
+          connection.setRequestProperty("Content-Type", "application/json")
+          connection.setRequestProperty("Accept", "application/json")
+          connection.setRequestProperty("Authorization", App.getToken())
+          connection.readTimeout = 10000
+          connection.connectTimeout = 10000
+          connection.doInput = true
+          connection.doOutput = true
+
+          //json format
+          val requestJson = JSONObject()
+          requestJson.put("title", addTaskRequest.title)
+          requestJson.put("content", addTaskRequest.content)
+          requestJson.put("taskPriority", addTaskRequest.taskPriority)
+
+          try {
+              connection.outputStream.use {
+                  it.write(requestJson.toString().toByteArray())
+              }
+              val reader = InputStreamReader(connection.inputStream)
+              reader.use { input ->
+                  val response = StringBuilder()
+
+                  val bufferedReader = BufferedReader(input)
+                  bufferedReader.useLines { lines ->
+                      lines.forEach {
+                          response.append(it.trim())
+                      }
+                  }
+
+                  val jsonObject = JSONObject(response.toString())
+
+                  //create object from Json properties by keys
+                  val task = Task(
+                      jsonObject.getString("id"),
+                      jsonObject.getString("title"),
+                      jsonObject.getString("content"),
+                      jsonObject.getBoolean("isCompleted"),
+                      jsonObject.getInt("taskPriority")
+                  )
+
+                  onTaskCreated(task, null)
+              }
+
+          } catch (error: Throwable){
+              Log.d("proverka", "error")
+              onTaskCreated(null, error)
+          }
+          connection.disconnect()
+      }).start()
+
+
   }
 
   fun getUserProfile(onUserProfileReceived: (UserProfile?, Throwable?) -> Unit) {
