@@ -39,6 +39,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.R
+import com.raywenderlich.android.taskie.model.Success
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
 import com.raywenderlich.android.taskie.networking.NetworkStatusChecker
 import com.raywenderlich.android.taskie.networking.RemoteApi
@@ -76,12 +77,12 @@ class RegisterActivity : AppCompatActivity() {
     if (username.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
       //before make Api call check internet
         networkStatusChecker.performIfConnectedToInternet {
-          remoteApi.registerUser(UserDataRequest(email, password, username)) { message, error ->
+          remoteApi.registerUser(UserDataRequest(email, password, username)) { result ->
             //if message - null - error
-            if (message != null) {
-              toast(message)
+            if (result is Success) {
+              toast(result.data)
               onRegisterSuccess()
-            } else if (error != null) {
+            } else  {
               onRegisterError()
             }
           }
