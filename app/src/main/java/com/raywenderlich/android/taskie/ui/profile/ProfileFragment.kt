@@ -46,6 +46,9 @@ import com.raywenderlich.android.taskie.model.Success
 import com.raywenderlich.android.taskie.networking.RemoteApi
 import com.raywenderlich.android.taskie.ui.login.LoginActivity
 import kotlinx.android.synthetic.main.fragment_profile.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Displays the user profile information.
@@ -63,13 +66,14 @@ class ProfileFragment : Fragment() {
     super.onViewCreated(view, savedInstanceState)
     initUi()
 
-    remoteApi.getUserProfile { result ->
-      if (result is Success) {
-        userEmail.text = result.data.email
-        userName.text = getString(R.string.user_name_text, result.data.name)
-        numberOfNotes.text = getString(R.string.number_of_notes_text, result.data.numberOfNotes)
+      GlobalScope.launch(Dispatchers.Main) {
+        val result = remoteApi.getUserProfile()
+        if (result is Success) {
+          userEmail.text = result.data.email
+          userName.text = getString(R.string.user_name_text, result.data.name)
+          numberOfNotes.text = getString(R.string.number_of_notes_text, result.data.numberOfNotes)
+        }
       }
-    }
   }
 
   private fun initUi() {

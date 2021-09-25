@@ -54,6 +54,9 @@ import com.raywenderlich.android.taskie.utils.gone
 import com.raywenderlich.android.taskie.utils.toast
 import com.raywenderlich.android.taskie.utils.visible
 import kotlinx.android.synthetic.main.fragment_notes.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * Fetches and displays notes from the API.
@@ -110,12 +113,13 @@ class NotesFragment : Fragment(), AddTaskDialogFragment.TaskAddedListener,
   private fun getAllTasks() {
     progress.visible()
     networkStatusChecker.performIfConnectedToInternet {
-      remoteApi.getTasks { result ->
-        if (result is Success) {
-          onTaskListReceived(result.data)
-        } else {
-          onGetTasksFailed()
-        }
+      GlobalScope.launch(Dispatchers.Main) {
+        val result = remoteApi.getTasks()
+          if (result is Success) {
+            onTaskListReceived(result.data)
+          } else {
+            onGetTasksFailed()
+          }
       }
     }
   }

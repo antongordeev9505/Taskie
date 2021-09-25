@@ -18,21 +18,21 @@ interface RemoteApiService {
     fun registerUser(@Body request: UserDataRequest): Call<RegisterResponse>
 
     @GET("/api/note")
-    fun getNotes(): Call<GetTasksResponse>
+    suspend fun getNotes(): GetTasksResponse
 
     @POST("/api/login")
     fun loginUser(@Body request: UserDataRequest): Call<LoginResponse>
 
     @GET("/api/user/profile")
-    fun getUserProfile(): Call<UserProfileResponse>
+    suspend fun getUserProfile(): UserProfileResponse
 
     //query use for search spicific elements on the server
     //for example - something by id query
     @POST("api/note/complete")
-    fun completeTask(@Query("id") noteId: String): Call<CompleteNoteResponse>
+    suspend fun completeTask(@Query("id") noteId: String): CompleteNoteResponse
 
     @POST("api/note")
-    fun addTask(@Body request: AddTaskRequest): Call<Task>
+    suspend fun addTask(@Body request: AddTaskRequest): Task
 
     //cuz we changed to suspend - retrofit understood it and generated code for threading
     //also return only model without Call

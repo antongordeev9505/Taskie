@@ -36,7 +36,6 @@ package com.raywenderlich.android.taskie.ui.notes.dialog
 
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -121,13 +120,13 @@ class TaskOptionsDialogFragment : DialogFragment() {
 
     completeTask.setOnClickListener {
       networkStatusChecker.performIfConnectedToInternet {
-        //pass id
-        remoteApi.completeTask(taskId) { error ->
-          if (error == null) {
+        GlobalScope.launch(Dispatchers.Main) {
+          val result = remoteApi.completeTask(taskId)
+
+          if (result is Success){
             taskOptionSelectedListener?.onTaskCompleted(taskId)
           }
           dismissAllowingStateLoss()
-
         }
       }
     }
