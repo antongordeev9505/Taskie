@@ -1,12 +1,10 @@
 package com.raywenderlich.android.taskie.networking
 
 import com.raywenderlich.android.taskie.model.Task
+import com.raywenderlich.android.taskie.model.UserProfile
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
-import com.raywenderlich.android.taskie.model.response.CompleteNoteResponse
-import com.raywenderlich.android.taskie.model.response.GetTasksResponse
-import com.raywenderlich.android.taskie.model.response.LoginResponse
-import com.raywenderlich.android.taskie.model.response.RegisterResponse
+import com.raywenderlich.android.taskie.model.response.*
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -30,7 +28,7 @@ interface RemoteApiService {
     fun loginUser(@Body request: UserDataRequest): Call<LoginResponse>
 
     @GET("/api/user/profile")
-    fun getUserProfile(@Header("Authorization") token: String): Call<ResponseBody>
+    fun getUserProfile(@Header("Authorization") token: String): Call<UserProfileResponse>
 
     //query use for search spicific elements on the server
     //for example - something by id query
