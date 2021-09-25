@@ -34,14 +34,10 @@
 
 package com.raywenderlich.android.taskie.networking
 
-import android.util.Log
 import com.raywenderlich.android.taskie.model.*
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
 import com.raywenderlich.android.taskie.model.response.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import okhttp3.Dispatcher
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -122,21 +118,16 @@ class RemoteApi(private val apiService: RemoteApiService) {
     //function return the result instead of send it through callback
     //using suspend modifiar we can use suspend functions inside function
     //deleteTask - suspend function - it means Main thread will not be blocked
-  suspend fun deleteTask(taskId: String): Result<String> = withContext(Dispatchers.IO) {
-        //executing request in try/catch block in background
-      try {
-          //get the body
-          val data = apiService.deleteTask(taskId).execute().body()
+    //executing request in try/catch block in background
+    //return try/catch block
+    //retrofit take care of Threading
+    suspend fun deleteTask(taskId: String): Result<String> = try {
+        val data = apiService.deleteTask(taskId)
 
-          if (data?.message == null) {
-              Failure(NullPointerException("No response"))
-          } else {
-              Success(data.message)
-          }
-      } catch (error: Throwable) {
-          Failure(error)
-      }
-  }
+        Success(data.message)
+    } catch (error: Throwable) {
+        Failure(error)
+    }
 
   fun completeTask(taskId: String, onTaskCompleted: (Throwable?) -> Unit) {
       apiService.completeTask(taskId).enqueue(object : Callback<CompleteNoteResponse>{

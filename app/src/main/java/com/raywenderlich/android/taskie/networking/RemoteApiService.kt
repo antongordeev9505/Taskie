@@ -34,7 +34,9 @@ interface RemoteApiService {
     @POST("api/note")
     fun addTask(@Body request: AddTaskRequest): Call<Task>
 
+    //cuz we changed to suspend - retrofit understood it and generated code for threading
+    //also return only model without Call
     @DELETE("api/note")
-    fun deleteTask(@Query("id") noteId: String): Call<DeleteNoteResponse>
+    suspend fun deleteTask(@Query("id") noteId: String): DeleteNoteResponse
 
 }
