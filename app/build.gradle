@@ -62,4 +62,7 @@ dependencies {
   //helper functions
   implementation "com.squareup.okhttp3:okhttp:4.9.0"
 
+  //login interceptors
+  implementation "com.squareup.okhttp3:logging-interceptor:4.9.1"
+
 }

@@ -6,10 +6,15 @@ import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.logging.HttpLoggingInterceptor
 
 //default client
 fun buildClient(): OkHttpClient =
     OkHttpClient.Builder()
+            //added interceptor, to intercept on BODY level
+        .addInterceptor(HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        })
         .build()
 
 //make more forgiving parser
