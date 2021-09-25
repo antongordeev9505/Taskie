@@ -115,8 +115,23 @@ class RemoteApi(private val apiService: RemoteApiService) {
       })
   }
 
-  fun deleteTask(onTaskDeleted: (Throwable?) -> Unit) {
-    onTaskDeleted(null)
+  fun deleteTask(taskId: String, onTaskDeleted: (Result<String>) -> Unit) {
+      apiService.deleteTask(taskId).enqueue(object : Callback<DeleteNoteResponse>{
+
+          override fun onFailure(call: Call<DeleteNoteResponse>, error: Throwable) {
+              onTaskDeleted(Failure(error))
+          }
+
+          override fun onResponse(call: Call<DeleteNoteResponse>, response: Response<DeleteNoteResponse>) {
+              val deleteNoteResponse = response.body()
+
+              if (deleteNoteResponse?.message == null){
+                  onTaskDeleted(Failure(NullPointerException("No response")))
+              } else {
+                  onTaskDeleted(Success(deleteNoteResponse.message))
+              }
+          }
+      })
   }
 
   fun completeTask(taskId: String, onTaskCompleted: (Throwable?) -> Unit) {

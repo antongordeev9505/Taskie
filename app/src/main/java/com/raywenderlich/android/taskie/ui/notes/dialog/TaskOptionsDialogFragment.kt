@@ -44,6 +44,7 @@ import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.R
+import com.raywenderlich.android.taskie.model.Success
 import com.raywenderlich.android.taskie.networking.NetworkStatusChecker
 import com.raywenderlich.android.taskie.networking.RemoteApi
 import kotlinx.android.synthetic.main.fragment_dialog_task_options.*
@@ -103,11 +104,13 @@ class TaskOptionsDialogFragment : DialogFragment() {
     if (taskId.isEmpty()) dismissAllowingStateLoss()
 
     deleteTask.setOnClickListener {
-      remoteApi.deleteTask { error ->
-        if (error == null) {
-          taskOptionSelectedListener?.onTaskDeleted(taskId)
+      networkStatusChecker.performIfConnectedToInternet {
+        remoteApi.deleteTask(taskId) { result ->
+          if (result is Success) {
+            taskOptionSelectedListener?.onTaskDeleted(taskId)
+          }
+          dismissAllowingStateLoss()
         }
-        dismissAllowingStateLoss()
       }
     }
 
