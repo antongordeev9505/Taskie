@@ -34,7 +34,6 @@
 
 package com.raywenderlich.android.taskie.networking
 
-import com.raywenderlich.android.taskie.App
 import com.raywenderlich.android.taskie.model.*
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
@@ -98,7 +97,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
   }
 
   fun getTasks(onTasksReceived: (Result<List<Task>>) -> Unit) {
-      apiService.getNotes(App.getToken()).enqueue(object : Callback<GetTasksResponse> {
+      apiService.getNotes().enqueue(object : Callback<GetTasksResponse> {
 
           override fun onFailure(call: Call<GetTasksResponse>, error: Throwable) {
               onTasksReceived(Failure(error))
@@ -121,7 +120,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
   }
 
   fun completeTask(taskId: String, onTaskCompleted: (Throwable?) -> Unit) {
-      apiService.completeTask(App.getToken(), taskId).enqueue(object : Callback<CompleteNoteResponse>{
+      apiService.completeTask(taskId).enqueue(object : Callback<CompleteNoteResponse>{
 
           override fun onFailure(call: Call<CompleteNoteResponse>, error: Throwable) {
               onTaskCompleted(error)
@@ -140,7 +139,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
   }
 
   fun addTask(addTaskRequest: AddTaskRequest, onTaskCreated: (Result<Task>) -> Unit) {
-      apiService.addTask(App.getToken(), addTaskRequest).enqueue(object : Callback<Task>{
+      apiService.addTask(addTaskRequest).enqueue(object : Callback<Task>{
 
           override fun onFailure(call: Call<Task>, error: Throwable) {
               onTaskCreated(Failure(error))
@@ -171,7 +170,7 @@ class RemoteApi(private val apiService: RemoteApiService) {
           val tasks = result as Success
 
           //use nested Api call
-          apiService.getUserProfile(App.getToken()).enqueue(object : Callback<UserProfileResponse>{
+          apiService.getUserProfile().enqueue(object : Callback<UserProfileResponse>{
 
               override fun onFailure(call: Call<UserProfileResponse>, error: Throwable) {
                   onUserProfileReceived(Failure(error))
