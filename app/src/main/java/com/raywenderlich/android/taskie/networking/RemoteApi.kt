@@ -34,10 +34,14 @@
 
 package com.raywenderlich.android.taskie.networking
 
+import android.util.Log
 import com.raywenderlich.android.taskie.model.*
 import com.raywenderlich.android.taskie.model.request.AddTaskRequest
 import com.raywenderlich.android.taskie.model.request.UserDataRequest
 import com.raywenderlich.android.taskie.model.response.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.Dispatcher
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -115,23 +119,23 @@ class RemoteApi(private val apiService: RemoteApiService) {
       })
   }
 
-  fun deleteTask(taskId: String, onTaskDeleted: (Result<String>) -> Unit) {
-      apiService.deleteTask(taskId).enqueue(object : Callback<DeleteNoteResponse>{
+    //function return the result instead of send it through callback
+    //using suspend modifiar we can use suspend functions inside function
+    //deleteTask - suspend function - it means Main thread will not be blocked
+  suspend fun deleteTask(taskId: String): Result<String> = withContext(Dispatchers.IO) {
+        //executing request in try/catch block in background
+      try {
+          //get the body
+          val data = apiService.deleteTask(taskId).execute().body()
 
-          override fun onFailure(call: Call<DeleteNoteResponse>, error: Throwable) {
-              onTaskDeleted(Failure(error))
+          if (data?.message == null) {
+              Failure(NullPointerException("No response"))
+          } else {
+              Success(data.message)
           }
-
-          override fun onResponse(call: Call<DeleteNoteResponse>, response: Response<DeleteNoteResponse>) {
-              val deleteNoteResponse = response.body()
-
-              if (deleteNoteResponse?.message == null){
-                  onTaskDeleted(Failure(NullPointerException("No response")))
-              } else {
-                  onTaskDeleted(Success(deleteNoteResponse.message))
-              }
-          }
-      })
+      } catch (error: Throwable) {
+          Failure(error)
+      }
   }
 
   fun completeTask(taskId: String, onTaskCompleted: (Throwable?) -> Unit) {
